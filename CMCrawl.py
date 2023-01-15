@@ -162,7 +162,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         fill_table(current_lis, current_table)
 
     def add_to_list(self):
-        self.bottom_list = self.table_to_list(self.found_items_table)
+        self.bottom_list += self.table_to_list(self.found_items_table)
         fill_table(self.bottom_list, self.current_list_table)
 
     def table_to_list(self, table):
