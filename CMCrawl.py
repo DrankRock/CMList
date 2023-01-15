@@ -92,6 +92,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.init_table(self.current_list_table)
         self.init_table(self.found_items_table)
         self.bottom_list = []
+        self.quantity = {}
+        self.condition = {}
         self.by_name.clicked.connect(self.sort_by_name)
         self.by_rarity.clicked.connect(self.sort_by_rarity)
         self.by_number.clicked.connect(self.sort_by_number)
@@ -157,9 +159,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # There is a way to keep values, with a dict, conteianing "exp|num|name" : <int>
         # And updating this dict before sorting, then updating the table after filling
         # same should be done for the combobox
+
+        for row in range(len(current_lis)):
+            key=""+current_table.item(row, 0).text()+"|"+current_table.item(row, 1).text()+"|"+current_table.item(row, 2).text()
+            self.quantity[key] = current_table.cellWidget(row, 4).value()
+            self.condition[key] = current_table.cellWidget(row, 5).currentText()
+        debug_print(self.condition)
+        debug_print(self.quantity)
+
         debug_print("Sorting list : {}".format(current_lis))
         current_lis = sorted(current_lis, key=lambda x: x[type_of_sort],
                              reverse=(not self.increasing.isChecked()))
+        for  line in current_lis:
+            key=""+line[0]+"|"+line[1]+"|"+line[2]
+            line[4]=int(self.quantity[key])
+            line[5]=self.condition[key]
         fill_table(current_lis, current_table)
 
     def add_to_list(self):
