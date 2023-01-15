@@ -52,13 +52,40 @@ class Worker(QtCore.QRunnable):
         return self.output_list
 
 
+def condition_combo_box():
+    combo = QComboBox()
+    combo.addItems(["none", "MT", "NM", "EX", "GD", "LP", "PL", "PO"])
+    return combo
+
+
+def fill_table(filler_list, table):
+    debug_print("-- fill table : {}".format(table.objectName()))
+    number_of_results = len(filler_list)
+    table.setRowCount(number_of_results)
+    for row, line in enumerate(filler_list):
+        debug_print(row)
+        for col, elem in enumerate(line):
+            debug_print(elem)
+            if col == 4:
+                spinbox = QSpinBox()
+                spinbox.setValue(int(elem))
+                table.setCellWidget(row, col, spinbox)
+            if col == 5:
+                combobox = condition_combo_box()
+                if elem != 0:
+                    combobox.setCurrentText(elem)
+                table.setCellWidget(row, col, combobox)
+            else:
+                table.setItem(row, col, QTableWidgetItem(elem))
+
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent=parent)
         self.worker = None
         self.setupUi(self)
         self.run_url_btn.clicked.connect(self.runURL)
-        self.cancel_url_btn.clicked.connect(self.generic_button_action)
+        self.cancel_url_btn.clicked.connect(self.cancel_action)
         self.current_found_list = []
         self.init_table(self.current_list_table)
         self.init_table(self.found_items_table)
@@ -111,39 +138,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             errorDialog("Error : url is incorrect")
             return
         else:
+            self.run_url_btn.setDisabled(True)
             # ## # # # # # #
             self.worker = Worker(url)
             self.threadpool.start(self.worker)
             self.worker.signals.progress.connect(self.update_progress)
             self.worker.signals.end.connect(self.end_worker)
             #  # # # # ## # #
-            self.fill_table(self.current_found_list, self.found_items_table)
-
-    def condition_combo_box(self):
-        combo = QComboBox()
-        combo.addItems(["none", "MT", "NM", "EX", "GD", "LP", "PL", "PO"])
-        return combo
-
-    # fill the top table containing the result of the scraping
-    def fill_table(self, filler_list, table):
-        debug_print("-- fill table : {}".format(table.objectName()))
-        number_of_results = len(filler_list)
-        table.setRowCount(number_of_results)
-        for row, line in enumerate(filler_list):
-            debug_print(row)
-            for col, elem in enumerate(line):
-                debug_print(elem)
-                if col == 4:
-                    spinbox = QSpinBox()
-                    spinbox.setValue(int(elem))
-                    table.setCellWidget(row, col, spinbox)
-                if col == 5:
-                    combobox = self.condition_combo_box()
-                    if elem != 0:
-                        combobox.setCurrentText(elem)
-                    table.setCellWidget(row, col, combobox)
-                else:
-                    table.setItem(row, col, QTableWidgetItem(elem))
+            fill_table(self.current_found_list, self.found_items_table)
 
     # sort the top table
     # This deletes the values of the spinBox / combobox. Avoiding this is possible but troublesome
@@ -156,11 +158,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.current_found_list = sorted(self.current_found_list, key=lambda x: x[type],
                                          reverse=(not self.increasing.isChecked()))
-        self.fill_table(self.current_found_list, self.found_items_table)
+        fill_table(self.current_found_list, self.found_items_table)
 
     def add_to_list(self):
         self.bottom_list = self.table_to_list(self.found_items_table)
-        self.fill_table(self.bottom_list, self.current_list_table)
+        fill_table(self.bottom_list, self.current_list_table)
 
     def table_to_list(self, table):
         output = []
@@ -184,7 +186,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def end_worker(self, true):
         self.progressBar.setValue(100)
         new_list = self.worker.output()
-        self.fill_table(new_list, self.found_items_table)
+        fill_table(new_list, self.found_items_table)
+        self.run_url_btn.setEnabled(True)
+
+    def cancel_action(self):
+        errorDialog("I have not yet found a way to stop an operation, sorry :c")
 
     def export(self):
         file_name = self.file_dialog()
@@ -202,7 +208,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if data[0][0] == "Expansion" and data[0][1] == "Number":
                 data = data[1:]
             self.current_found_list += data[1:]
-            self.fill_table(self.bottom_list, self.current_list_table)
+            fill_table(self.bottom_list, self.current_list_table)
 
     def file_dialog(self, type=0):
         options = QFileDialog.Options()
