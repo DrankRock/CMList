@@ -19,9 +19,10 @@ https://user-images.githubusercontent.com/32172257/212565491-e1f3cf7a-75e4-4aba-
 - possibility to import your list
 - fast and intuitive GUI
 - automated scraping
+- copy the list in csv format to the clipboard
+- sort the tables as you want quickly and easily
 
 ### Bugs
-- If you sort your list, you will lose the value of the number of cards and state, it is my priority.
 - You can't currently sort the bottom list of cards
 
 ### Misc
