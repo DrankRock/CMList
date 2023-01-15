@@ -101,7 +101,7 @@ class Ui_MainWindow(object):
         self.url_input_line_edit.setObjectName("url_input_line_edit")
         self.verticalLayout.addWidget(self.url_input_line_edit)
         self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
-        self.progressBar.setProperty("value", 24)
+        self.progressBar.setProperty("value", 0)
         self.progressBar.setObjectName("progressBar")
         self.verticalLayout.addWidget(self.progressBar)
         self.gridLayout.addLayout(self.verticalLayout, 0, 0, 1, 1)
