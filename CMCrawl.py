@@ -60,7 +60,9 @@ def condition_combo_box():
 
 def fill_table(filler_list, table):
     debug_print("-- fill table : {}".format(table.objectName()))
+    debug_print(filler_list)
     number_of_results = len(filler_list)
+    debug_print(number_of_results)
     table.setRowCount(number_of_results)
     for row, line in enumerate(filler_list):
         debug_print(row)
@@ -207,8 +209,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             data = list(csv.reader(f, delimiter=","))
             if data[0][0] == "Expansion" and data[0][1] == "Number":
                 data = data[1:]
-            self.current_found_list += data[1:]
-            fill_table(self.bottom_list, self.current_list_table)
+            debug_print("data to import : {}".format(data))
+            debug_print("size of current_found_list : {}".format(len(self.current_found_list)))
+            self.current_found_list += data
+            debug_print("size of current_found_list : {}".format(len(self.current_found_list)))
+            fill_table(self.current_found_list, self.current_list_table)
 
     def file_dialog(self, type=0):
         options = QFileDialog.Options()
