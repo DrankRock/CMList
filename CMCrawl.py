@@ -147,7 +147,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.worker.signals.progress.connect(self.update_progress)
             self.worker.signals.end.connect(self.end_worker)
             #  # # # # ## # #
-            fill_table(self.current_found_list, self.found_items_table)
 
     # sort the top table
     # This deletes the values of the spinBox / combobox. Avoiding this is possible but troublesome
