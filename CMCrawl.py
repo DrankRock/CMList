@@ -1,4 +1,4 @@
-import sys, re, csv
+import sys, re, csv, pyperclip
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal
@@ -100,6 +100,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButton.clicked.connect(self.add_to_list)
         self.export_btn.clicked.connect(self.export)
         self.import_btn.clicked.connect(self.import_file)
+        self.copy_btn.clicked.connect(self.copyToClipboard)
 
         self.increasing.setChecked(True)
 
@@ -197,20 +198,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         file_name = self.file_dialog()
         fields = ['Expansion', 'Number', 'Name', 'Rarity', 'Quantity', 'Condition', 'URL']
         new_list = self.table_to_list(self.current_list_table)
-        with open(file_name, 'w') as f:
-            write = csv.writer(f)
-            write.writerow(fields)
-            write.writerows(new_list)
+        if file_name :
+            with open(file_name, 'w') as f:
+                write = csv.writer(f)
+                write.writerow(fields)
+                write.writerows(new_list)
 
     def import_file(self):
         file_name = self.file_dialog(1)
-        with open(file_name, 'r') as f:
-            data = list(csv.reader(f, delimiter=","))
-            if data[0][0] == "Expansion" and data[0][1] == "Number":
-                data = data[1:]
-            debug_print("data to import : {}".format(data))
-            self.bottom_list += data
-            fill_table(self.bottom_list, self.current_list_table)
+        if file_name :
+            with open(file_name, 'r') as f:
+                data = list(csv.reader(f, delimiter=","))
+                if data[0][0] == "Expansion" and data[0][1] == "Number":
+                    data = data[1:]
+                debug_print("data to import : {}".format(data))
+                self.bottom_list += data
+                fill_table(self.bottom_list, self.current_list_table)
 
     def file_dialog(self, type=0):
         options = QFileDialog.Options()
@@ -223,6 +226,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                                       "All Files (*);;Python Files (*.py)", options=options)
         if filename:
             return filename
+
+    def copyToClipboard(self):
+        to_copy = ""
+        for line in self.bottom_list :
+            for col, elem in enumerate(line) :
+                if col == 2 :
+                    to_copy += "\"{}\", ".format(elem)
+                else :
+                    to_copy +="{}, ".format(elem)
+            to_copy = to_copy[:-1]
+            to_copy += "\n"
+        pyperclip.copy(to_copy)
+
+
 
 
 def graphic():
