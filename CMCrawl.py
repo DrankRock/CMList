@@ -1,4 +1,8 @@
 import sys, re, csv
+
+from PyQt5 import QtCore
+from PyQt5.QtCore import pyqtSignal
+
 from graphics import QtWidgets, Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QSpinBox, QComboBox, QFileDialog
 from functionalCore import urlScrape
@@ -20,9 +24,38 @@ def debug_print(text):
         print(text)
 
 
+# =############################################################=#
+# ----------------------- WORKER SIGNAL ---------------------- ####
+# The worker part is necessary to launch the GUI without stopping #
+# the functional core. Freezes are to expect without this      ####
+class WorkerSignals(QtCore.QObject):
+    progress = pyqtSignal(int)
+    end = pyqtSignal(bool)
+
+
+# =############################################################=#
+# ------------------------ WORKER CLASS ---------------------- #
+# I followed https://www.pythonguis.com/tutorials/multithreading-pyqt-applications-qthreadpool/
+# This tutorial. To avoid pyqt5 freezes.
+class Worker(QtCore.QRunnable):
+    def __init__(self, url):
+        super(Worker, self).__init__()
+        # run's variables
+        self.output_list = None
+        self.url = url
+        self.signals = WorkerSignals()
+
+    def run(self):
+        self.output_list = urlScrape(self.url, self.signals)
+
+    def output(self):
+        return self.output_list
+
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent=parent)
+        self.worker = None
         self.setupUi(self)
         self.run_url_btn.clicked.connect(self.runURL)
         self.cancel_url_btn.clicked.connect(self.generic_button_action)
@@ -40,6 +73,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.import_btn.clicked.connect(self.import_file)
 
         self.increasing.setChecked(True)
+
+        # Used by the Worker
+        self.threadpool = QtCore.QThreadPool()
 
     def init_table(self, table):
         table.setColumnCount(7)
@@ -75,7 +111,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             errorDialog("Error : url is incorrect")
             return
         else:
-            self.current_found_list = urlScrape(url)
+            # ## # # # # # #
+            self.worker = Worker(url)
+            self.threadpool.start(self.worker)
+            self.worker.signals.progress.connect(self.update_progress)
+            self.worker.signals.end.connect(self.end_worker)
+            #  # # # # ## # #
             self.fill_table(self.current_found_list, self.found_items_table)
 
     def condition_combo_box(self):
@@ -136,6 +177,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.found_items_table.item(i, 6).text()
                 ])
         return output
+
+    def update_progress(self, n):
+        self.progressBar.setValue(n)
+
+    def end_worker(self, true):
+        self.progressBar.setValue(100)
+        new_list = self.worker.output()
+        self.fill_table(new_list, self.found_items_table)
 
     def export(self):
         file_name = self.file_dialog()
