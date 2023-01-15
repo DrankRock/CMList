@@ -118,16 +118,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         header.setSectionResizeMode(6, QtWidgets.QHeaderView.Stretch)
 
     def sort_by_name(self):
-        self.sort_found_list(type=2)
+        self.sort_found_list(self.current_found_list, self.found_items_table,type_of_sort=2)
 
     def sort_by_rarity(self):
-        self.sort_found_list(type=3)
+        self.sort_found_list(self.current_found_list, self.found_items_table,type_of_sort=3)
 
     def sort_by_number(self):
-        self.sort_found_list(type=1)
+        self.sort_found_list(self.current_found_list, self.found_items_table,type_of_sort=1)
 
     def sort_by_expansion(self):
-        self.sort_found_list(type=0)
+        self.sort_found_list(self.current_found_list, self.found_items_table,type_of_sort=0)
 
     def generic_button_action(self):
         debug_print("Oh hi there ! - {}".format(self.increasing.isChecked()))
@@ -150,16 +150,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # sort the top table
     # This deletes the values of the spinBox / combobox. Avoiding this is possible but troublesome
-    def sort_found_list(self, type=1):
-        # type 0 = Expansion, 1 = Number, 2 = Name, 3 = Rarity
+    def sort_found_list(self, current_lis, current_table, type_of_sort=1):
+        # type_of_sort 0 = Expansion, 1 = Number, 2 = Name, 3 = Rarity
 
         # There is a way to keep values, with a dict, conteianing "exp|num|name" : <int>
         # And updating this dict before sorting, then updating the table after filling
         # same should be done for the combobox
-
-        self.current_found_list = sorted(self.current_found_list, key=lambda x: x[type],
-                                         reverse=(not self.increasing.isChecked()))
-        fill_table(self.current_found_list, self.found_items_table)
+        debug_print("Sorting list : {}".format(current_lis))
+        current_lis = sorted(current_lis, key=lambda x: x[type_of_sort],
+                             reverse=(not self.increasing.isChecked()))
+        fill_table(current_lis, current_table)
 
     def add_to_list(self):
         self.bottom_list = self.table_to_list(self.found_items_table)
@@ -186,8 +186,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def end_worker(self, true):
         self.progressBar.setValue(100)
-        new_list = self.worker.output()
-        fill_table(new_list, self.found_items_table)
+        self.current_found_list = self.worker.output()
+        fill_table(self.current_found_list, self.found_items_table)
         self.run_url_btn.setEnabled(True)
 
     def cancel_action(self):
