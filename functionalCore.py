@@ -93,12 +93,12 @@ def urlScrape(url, signals):
         links = current_soup.find_all('div', class_='row no-gutters')
         print("-----------")
         print(current_url)
-        i = 0
         for elem in links:
             if 'class="col-icon small"' in str(elem):
                 result.append(divToInfos(elem))
                 all_divs_of_cards.append(elem)
-        signals.progress.emit(int(float(i)/float(num_page) * 100))
+        progress_value = int(float(i)/float(num_page) * 100)
+        signals.progress.emit(progress_value)
     # for e in all_divs_of_cards:
     #     print(e)
     signals.end.emit(True)
