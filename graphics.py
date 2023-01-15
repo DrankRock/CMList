@@ -16,6 +16,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1100, 1100)
+        MainWindow.setWindowIcon(QtGui.QIcon('icon.ico'))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -190,8 +191,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.version.setText(_translate("MainWindow", "CMCrawl v.0.1 - 16/12/22"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "CMCrawl"))
+        self.version.setText(_translate("MainWindow", "CMCrawl v.0.1 - 15/01/23"))
         self.export_btn.setText(_translate("MainWindow", "export"))
         self.import_btn.setText(_translate("MainWindow", "import"))
         self.copy_btn.setText(_translate("MainWindow", "copy to clipboard"))
