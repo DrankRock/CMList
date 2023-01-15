@@ -209,10 +209,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if data[0][0] == "Expansion" and data[0][1] == "Number":
                 data = data[1:]
             debug_print("data to import : {}".format(data))
-            debug_print("size of current_found_list : {}".format(len(self.current_found_list)))
-            self.current_found_list += data
-            debug_print("size of current_found_list : {}".format(len(self.current_found_list)))
-            fill_table(self.current_found_list, self.current_list_table)
+            self.bottom_list += data
+            fill_table(self.bottom_list, self.current_list_table)
 
     def file_dialog(self, type=0):
         options = QFileDialog.Options()
