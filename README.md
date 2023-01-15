@@ -12,10 +12,13 @@ $ python3 -m pip install -r requirements.txt
 ``python3 CMCrawl.py``
 
 ### Demo
-
-
-
 https://user-images.githubusercontent.com/32172257/212565491-e1f3cf7a-75e4-4aba-9695-6e049184208e.mp4
+
+### Features
+- csv output
+- possibility to import your list
+- fast and intuitive GUI
+- automated scraping
 
 ### Bugs
 - If you sort your list, you will lose the value of the number of cards and state, it is my priority.
