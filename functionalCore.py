@@ -63,7 +63,7 @@ def divToInfos(div):
     # print(expansions, url, name, num, rarity)
 
 
-def urlScrape(url):
+def urlScrape(url, signals):
     result = []
     soup = request_block(url)
     all_divs_of_cards = []
@@ -81,7 +81,7 @@ def urlScrape(url):
     num_page = int(str_page.split(' ')[-1][:-1])
     if num_page == 15:
         print("[Info] - Max number of pages (15), filler_list might be incomplete.")
-
+    signals.progress.emit(0)
     for i in range(1, num_page + 1):
         # current_url = url + separator + "site=" + str(i)
         if "site=" in url :
@@ -98,6 +98,8 @@ def urlScrape(url):
             if 'class="col-icon small"' in str(elem):
                 result.append(divToInfos(elem))
                 all_divs_of_cards.append(elem)
+        signals.progress.emit(int(float(i)/float(num_page) * 100))
     # for e in all_divs_of_cards:
     #     print(e)
+    signals.end.emit(True)
     return sorted(result, key=lambda x: x[1])
