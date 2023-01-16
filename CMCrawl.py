@@ -9,6 +9,35 @@ from functionalCore import urlScrape
 
 DEBUG = False
 
+dict_language = {
+    "none": None,
+    "English": 1,
+    "French": 2,
+    "German": 3,
+    "Spanish": 4,
+    "Italian": 5,
+    "S-Chinese": 6,
+    "Japanese": 7,
+    "Portuguese": 8,
+    "Russian": 9,
+    "Korean": 10,
+    "T-Chinese": 11,
+    "Dutch": 12,
+    "Polish": 13,
+    "Czech": 14,
+    "Hungarian": 15
+}
+
+dict_cond = {
+    "none": 0,
+    "MT": 1,
+    "NM": 2,
+    "EX": 3,
+    "GD": 4,
+    "LP": 5,
+    "PL": 6,
+    "PO": 0
+}
 
 def errorDialog(error_message):
     msg = QMessageBox()
@@ -58,6 +87,14 @@ def condition_combo_box():
     return combo
 
 
+def condition_to_value(condition):
+    return dict_cond.get(condition)
+
+
+def language_to_value(language):
+    return dict_language.get(language)
+
+
 def language_combo_box():
     combo = QComboBox()
     combo.addItems(["none", "English", "French", "German", "Spanish", "Italian", "S-Chinese", "Japanese", "Portuguese",
@@ -91,6 +128,41 @@ def fill_table(filler_list, table):
                 table.setCellWidget(row, col, combobox)
             else:
                 table.setItem(row, col, QTableWidgetItem(elem))
+
+
+def url_add_condition_language(url, condition, language):
+    if '?' in url :
+        url = url.split('?')[0]
+    separator = '?'
+    new_url = url
+    if condition != "none":
+        new_url += separator + "minCondition=" + str(condition_to_value(condition))
+        separator = '&'
+    if language != "none":
+        new_url += separator + "language=" + str(language_to_value(language))
+    return new_url
+
+
+def list_to_string(chosen_list):
+    to_copy = ""
+    condition = ""
+    language = ""
+    for line in chosen_list:
+        for col, elem in enumerate(line):
+            if col == 2:
+                to_copy += "\"{}\", ".format(elem)
+            if col == 5:
+                condition = elem
+            if col == 6:
+                language = elem
+            if col == 7:
+                elem = url_add_condition_language(elem, condition, language)
+                to_copy += "{}".format(elem)
+            else:
+                to_copy += "{}, ".format(elem)
+
+        to_copy += "\n"
+    return to_copy
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -204,14 +276,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             number_of_item = table.cellWidget(i, 4).value()
             if number_of_item > 0:
                 output.append([
-                    self.found_items_table.item(i, 0).text(),
-                    self.found_items_table.item(i, 1).text(),
-                    self.found_items_table.item(i, 2).text(),
-                    self.found_items_table.item(i, 3).text(),
+                    table.item(i, 0).text(),
+                    table.item(i, 1).text(),
+                    table.item(i, 2).text(),
+                    table.item(i, 3).text(),
                     number_of_item,
-                    self.found_items_table.cellWidget(i, 5).currentText(),
-                    self.found_items_table.cellWidget(i, 6).currentText(),
-                    self.found_items_table.item(i, 7).text()
+                    table.cellWidget(i, 5).currentText(),
+                    table.cellWidget(i, 6).currentText(),
+                    url_add_condition_language(
+                        table.item(i, 7).text(),
+                        table.cellWidget(i, 5).currentText(),
+                        table.cellWidget(i, 6).currentText()
+                    )
                 ])
         return output
 
@@ -261,15 +337,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             return filename
 
     def copyToClipboard(self):
-        to_copy = ""
-        for line in self.bottom_list:
-            for col, elem in enumerate(line):
-                if col == 2:
-                    to_copy += "\"{}\", ".format(elem)
-                else:
-                    to_copy += "{}, ".format(elem)
-            to_copy = to_copy[:-1]
-            to_copy += "\n"
+        to_copy = list_to_string(self.bottom_list)
         pyperclip.copy(to_copy)
 
 

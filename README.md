@@ -21,9 +21,14 @@ https://user-images.githubusercontent.com/32172257/212565491-e1f3cf7a-75e4-4aba-
 - automated scraping
 - copy the list in csv format to the clipboard
 - sort the tables as you want quickly and easily
+- "Duplicate Selection" button
 
 ### Bugs
 - You can't currently sort the bottom list of cards
+
+### TODO
+- Add language+condition to cm links
+- add options to export only selection, links, or everything
 
 ### Misc
 This tool was developed and tested on **Ubuntu 22.04.1 LTS**. If you face any issue, please report them in the issue
