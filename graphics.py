@@ -13,6 +13,13 @@ from PyQt5.QtWidgets import QHeaderView
 
 
 class Ui_MainWindow(object):
+    def __init__(self):
+        self.export_btn = None
+        self.centralwidget = None
+        self.gridLayout = None
+        self.version = None
+        self.url_frame = None
+        self.gridLayout_5 = None
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1100, 1100)
@@ -28,22 +35,27 @@ class Ui_MainWindow(object):
         self.url_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.url_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.url_frame.setObjectName("url_frame")
+
+        # Grid Layout containing the buttons on the right of the Bottom list
         self.gridLayout_5 = QtWidgets.QGridLayout(self.url_frame)
         self.gridLayout_5.setObjectName("gridLayout_5")
+        # Combo Box with options for export and copy
+        self.export_combobox = QtWidgets.QComboBox(self.url_frame)
+        self.export_combobox.addItems(["everything", "links"])
+        self.export_combobox.setObjectName("export_combobox")
+
+        self.gridLayout_5.addWidget(self.export_combobox, 1, 0, 1, 1)
+
         # export button
         self.export_btn = QtWidgets.QPushButton(self.url_frame)
         self.export_btn.setObjectName("export_btn")
-        self.gridLayout_5.addWidget(self.export_btn, 4, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.export_btn, 3, 0, 1, 1)
         self.import_btn = QtWidgets.QPushButton(self.url_frame)
         self.import_btn.setObjectName("import_btn")
-        self.gridLayout_5.addWidget(self.import_btn, 3, 0, 1, 1)
         self.copy_btn = QtWidgets.QPushButton(self.url_frame)
         self.copy_btn.setObjectName("copy_btn")
         self.gridLayout_5.addWidget(self.copy_btn, 2, 0, 1, 1)
-        self.pushButton_2 = QtWidgets.QPushButton(self.url_frame)
-        self.pushButton_2.setStyleSheet("background-color: rgb(46, 194, 126);")
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.gridLayout_5.addWidget(self.pushButton_2, 6, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.import_btn, 6, 0, 1, 1)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_5.addItem(spacerItem, 5, 0, 1, 1)
         self.gridLayout.addWidget(self.url_frame, 3, 1, 1, 1)
@@ -196,7 +208,6 @@ class Ui_MainWindow(object):
         self.export_btn.setText(_translate("MainWindow", "export"))
         self.import_btn.setText(_translate("MainWindow", "import"))
         self.copy_btn.setText(_translate("MainWindow", "copy to clipboard"))
-        self.pushButton_2.setText(_translate("MainWindow", "save to list"))
         self.cancel_url_btn.setText(_translate("MainWindow", "Cancel"))
         self.run_url_btn.setText(_translate("MainWindow", "Run"))
         self.current_list_lbl.setText(_translate("MainWindow", "Current List :"))

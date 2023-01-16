@@ -143,23 +143,28 @@ def url_add_condition_language(url, condition, language):
     return new_url
 
 
-def list_to_string(chosen_list):
+def list_to_string(chosen_list, urlMode=0):
     to_copy = ""
     condition = ""
     language = ""
     for line in chosen_list:
         for col, elem in enumerate(line):
-            if col == 2:
-                to_copy += "\"{}\", ".format(elem)
-            if col == 5:
-                condition = elem
-            if col == 6:
-                language = elem
-            if col == 7:
-                elem = url_add_condition_language(elem, condition, language)
-                to_copy += "{}".format(elem)
-            else:
-                to_copy += "{}, ".format(elem)
+            if urlMode == 1 :
+                if col == 7 :
+                    elem = url_add_condition_language(elem, condition, language)
+                    to_copy += "{}".format(elem)
+            else :
+                if col == 2:
+                    to_copy += "\"{}\", ".format(elem)
+                if col == 5:
+                    condition = elem
+                if col == 6:
+                    language = elem
+                if col == 7:
+                    elem = url_add_condition_language(elem, condition, language)
+                    to_copy += "{}".format(elem)
+                else:
+                    to_copy += "{}, ".format(elem)
 
         to_copy += "\n"
     return to_copy
@@ -275,20 +280,29 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         for i in range(0, table.rowCount()):
             number_of_item = table.cellWidget(i, 4).value()
             if number_of_item > 0:
-                output.append([
-                    table.item(i, 0).text(),
-                    table.item(i, 1).text(),
-                    table.item(i, 2).text(),
-                    table.item(i, 3).text(),
-                    number_of_item,
-                    table.cellWidget(i, 5).currentText(),
-                    table.cellWidget(i, 6).currentText(),
-                    url_add_condition_language(
-                        table.item(i, 7).text(),
+                if self.export_combobox.currentText() == "links":
+                    output.append([
+                        url_add_condition_language(
+                            table.item(i, 7).text(),
+                            table.cellWidget(i, 5).currentText(),
+                            table.cellWidget(i, 6).currentText()
+                        )
+                    ])
+                else :
+                    output.append([
+                        table.item(i, 0).text(),
+                        table.item(i, 1).text(),
+                        table.item(i, 2).text(),
+                        table.item(i, 3).text(),
+                        number_of_item,
                         table.cellWidget(i, 5).currentText(),
-                        table.cellWidget(i, 6).currentText()
-                    )
-                ])
+                        table.cellWidget(i, 6).currentText(),
+                        url_add_condition_language(
+                            table.item(i, 7).text(),
+                            table.cellWidget(i, 5).currentText(),
+                            table.cellWidget(i, 6).currentText()
+                        )
+                    ])
         return output
 
     def update_progress(self, n):
@@ -305,7 +319,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def export(self):
         file_name = self.file_dialog()
-        fields = ['Expansion', 'Number', 'Name', 'Rarity', 'Quantity', 'Condition', 'Langage', 'URL']
+        if self.export_combobox.currentText() != "links":
+            fields = ['Expansion', 'Number', 'Name', 'Rarity', 'Quantity', 'Condition', 'Langage', 'Link']
+        else :
+            fields = ['Link']
         new_list = self.table_to_list(self.current_list_table)
         if file_name:
             with open(file_name, 'w') as f:
@@ -337,8 +354,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             return filename
 
     def copyToClipboard(self):
-        to_copy = list_to_string(self.bottom_list)
-        pyperclip.copy(to_copy)
+        if self.export_combobox.currentText() == "everything":
+            to_copy = list_to_string(self.bottom_list)
+            pyperclip.copy(to_copy)
+        else :
+            to_copy = list_to_string(self.bottom_list, 1)
+            pyperclip.copy(to_copy)
 
 
 def graphic():
