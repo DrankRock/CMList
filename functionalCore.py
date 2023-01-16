@@ -59,7 +59,7 @@ def divToInfos(div):
     num = re.findall(r'has-content-centered">(.*?)</div><div', div)[0]
 
     rarity = re.findall(r'data-original-title="(.*?)" data-placement', div)[0]
-    return [expansions, num, name, rarity, 0, 0, url]
+    return [expansions, num, name, rarity, 0, 0, 0, url]
     # print(expansions, url, name, num, rarity)
 
 

@@ -58,6 +58,13 @@ def condition_combo_box():
     return combo
 
 
+def language_combo_box():
+    combo = QComboBox()
+    combo.addItems(["none", "English", "French", "German", "Spanish", "Italian", "S-Chinese", "Japanese", "Portuguese",
+                    "Russian", "Korean", "T-Chinese", "Dutch", "Polish", "Czech", "Hungarian"])
+    return combo
+
+
 def fill_table(filler_list, table):
     debug_print("-- fill table : {}".format(table.objectName()))
     debug_print(filler_list)
@@ -72,8 +79,13 @@ def fill_table(filler_list, table):
                 spinbox = QSpinBox()
                 spinbox.setValue(int(elem))
                 table.setCellWidget(row, col, spinbox)
-            if col == 5:
+            elif col == 5:
                 combobox = condition_combo_box()
+                if elem != 0:
+                    combobox.setCurrentText(elem)
+                table.setCellWidget(row, col, combobox)
+            elif col == 6:
+                combobox = language_combo_box()
                 if elem != 0:
                     combobox.setCurrentText(elem)
                 table.setCellWidget(row, col, combobox)
@@ -94,6 +106,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bottom_list = []
         self.quantity = {}
         self.condition = {}
+        self.language = {}
         self.by_name.clicked.connect(self.sort_by_name)
         self.by_rarity.clicked.connect(self.sort_by_rarity)
         self.by_number.clicked.connect(self.sort_by_number)
@@ -110,7 +123,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.threadpool = QtCore.QThreadPool()
 
     def init_table(self, table):
-        table.setColumnCount(7)
+        table.setColumnCount(8)
         header = table.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
@@ -118,19 +131,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(4, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(5, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(6, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(7, QtWidgets.QHeaderView.Stretch)
 
     def sort_by_name(self):
-        self.sort_found_list(self.current_found_list, self.found_items_table,type_of_sort=2)
+        self.sort_found_list(self.current_found_list, self.found_items_table, type_of_sort=2)
 
     def sort_by_rarity(self):
-        self.sort_found_list(self.current_found_list, self.found_items_table,type_of_sort=3)
+        self.sort_found_list(self.current_found_list, self.found_items_table, type_of_sort=3)
 
     def sort_by_number(self):
-        self.sort_found_list(self.current_found_list, self.found_items_table,type_of_sort=1)
+        self.sort_found_list(self.current_found_list, self.found_items_table, type_of_sort=1)
 
     def sort_by_expansion(self):
-        self.sort_found_list(self.current_found_list, self.found_items_table,type_of_sort=0)
+        self.sort_found_list(self.current_found_list, self.found_items_table, type_of_sort=0)
 
     def generic_button_action(self):
         debug_print("Oh hi there ! - {}".format(self.increasing.isChecked()))
@@ -161,19 +175,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # same should be done for the combobox
 
         for row in range(len(current_lis)):
-            key=""+current_table.item(row, 0).text()+"|"+current_table.item(row, 1).text()+"|"+current_table.item(row, 2).text()
+            key = "" + current_table.item(row, 0).text() + "|" + current_table.item(row,
+                                                                                    1).text() + "|" + current_table.item(
+                row, 2).text()
             self.quantity[key] = current_table.cellWidget(row, 4).value()
             self.condition[key] = current_table.cellWidget(row, 5).currentText()
+            self.language[key] = current_table.cellWidget(row, 6).currentText()
         debug_print(self.condition)
         debug_print(self.quantity)
 
         debug_print("Sorting list : {}".format(current_lis))
         current_lis = sorted(current_lis, key=lambda x: x[type_of_sort],
                              reverse=(not self.increasing.isChecked()))
-        for  line in current_lis:
-            key=""+line[0]+"|"+line[1]+"|"+line[2]
-            line[4]=int(self.quantity[key])
-            line[5]=self.condition[key]
+        for line in current_lis:
+            key = "" + line[0] + "|" + line[1] + "|" + line[2]
+            line[4] = int(self.quantity[key])
+            line[5] = self.condition[key]
+            line[6] = self.language[key]
         fill_table(current_lis, current_table)
 
     def add_to_list(self):
@@ -192,7 +210,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.found_items_table.item(i, 3).text(),
                     number_of_item,
                     self.found_items_table.cellWidget(i, 5).currentText(),
-                    self.found_items_table.item(i, 6).text()
+                    self.found_items_table.cellWidget(i, 6).currentText(),
+                    self.found_items_table.item(i, 7).text()
                 ])
         return output
 
@@ -210,9 +229,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def export(self):
         file_name = self.file_dialog()
-        fields = ['Expansion', 'Number', 'Name', 'Rarity', 'Quantity', 'Condition', 'URL']
+        fields = ['Expansion', 'Number', 'Name', 'Rarity', 'Quantity', 'Condition', 'Langage', 'URL']
         new_list = self.table_to_list(self.current_list_table)
-        if file_name :
+        if file_name:
             with open(file_name, 'w') as f:
                 write = csv.writer(f)
                 write.writerow(fields)
@@ -220,7 +239,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def import_file(self):
         file_name = self.file_dialog(1)
-        if file_name :
+        if file_name:
             with open(file_name, 'r') as f:
                 data = list(csv.reader(f, delimiter=","))
                 if data[0][0] == "Expansion" and data[0][1] == "Number":
@@ -243,17 +262,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def copyToClipboard(self):
         to_copy = ""
-        for line in self.bottom_list :
-            for col, elem in enumerate(line) :
-                if col == 2 :
+        for line in self.bottom_list:
+            for col, elem in enumerate(line):
+                if col == 2:
                     to_copy += "\"{}\", ".format(elem)
-                else :
-                    to_copy +="{}, ".format(elem)
+                else:
+                    to_copy += "{}, ".format(elem)
             to_copy = to_copy[:-1]
             to_copy += "\n"
         pyperclip.copy(to_copy)
-
-
 
 
 def graphic():
