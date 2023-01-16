@@ -148,25 +148,29 @@ def list_to_string(chosen_list, urlMode=0):
     condition = ""
     language = ""
     for line in chosen_list:
+        number_of_lines = 0;
         for col, elem in enumerate(line):
             if urlMode == 1 :
+                if col == 4 :
+                    number_of_lines = int(elem)
                 if col == 7 :
                     elem = url_add_condition_language(elem, condition, language)
-                    to_copy += "{}".format(elem)
+                    for i in range(number_of_lines):
+                        to_copy += "{}\n".format(elem)
             else :
                 if col == 2:
                     to_copy += "\"{}\", ".format(elem)
-                if col == 5:
+                elif col == 5:
                     condition = elem
-                if col == 6:
+                    to_copy += "{}, ".format(elem)
+                elif col == 6:
                     language = elem
-                if col == 7:
+                    to_copy += "{}, ".format(elem)
+                elif col == 7:
                     elem = url_add_condition_language(elem, condition, language)
-                    to_copy += "{}".format(elem)
+                    to_copy += "{}\n".format(elem)
                 else:
                     to_copy += "{}, ".format(elem)
-
-        to_copy += "\n"
     return to_copy
 
 
@@ -281,13 +285,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             number_of_item = table.cellWidget(i, 4).value()
             if number_of_item > 0:
                 if self.export_combobox.currentText() == "links":
-                    output.append([
-                        url_add_condition_language(
-                            table.item(i, 7).text(),
-                            table.cellWidget(i, 5).currentText(),
-                            table.cellWidget(i, 6).currentText()
-                        )
-                    ])
+                    for j in range(number_of_item) :
+                        output.append([
+                            url_add_condition_language(
+                                table.item(i, 7).text(),
+                                table.cellWidget(i, 5).currentText(),
+                                table.cellWidget(i, 6).currentText()
+                            )
+                        ])
                 else :
                     output.append([
                         table.item(i, 0).text(),
