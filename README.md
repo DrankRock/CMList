@@ -1,12 +1,12 @@
-# CMCrawl
+# CMList
 ## A Cardmarket list creator
 
 **THIS CURRENTLY WORKS ONLY WITH YUGIOH**
 
 ### Installation
 ```bash
-$ git clone https://github.com/DrankRock/CMCrawl.git
-$ cd CMCrawl
+$ git clone https://github.com/DrankRock/CMList.git
+$ cd CMList
 $ python3 -m pip install -r requirements.txt
 ```
 
