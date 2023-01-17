@@ -1,15 +1,5 @@
 import requests, re, time, os
 from bs4 import BeautifulSoup
-from dataclasses import dataclass
-from tqdm import tqdm
-
-
-@dataclass
-class carte:
-    name: str
-    num: int
-    total: int
-    link: str
 
 
 def request_block(link):
@@ -45,7 +35,7 @@ def divToInfos(div):
      onmouseover="showMsgBox(this,`Ultra Rare`)" style="display: inline-block; width: 16px; height: 16px; background-image: 
      url('//static.cardmarket.com/img/2ebd68b4c57fac1ddc5d2b4a3fc530f4/spriteSheets/ssRarity/ssRarity3.png'); background-position: -208px -0px;" 
      title="Ultra Rare"></span></span></div></div></div><div class="col-availability px-2"><span class="d-none d-md-inline">188</span></div><div class="col-price pr-sm-2">0,50 €</div></div>
-    '''
+    '''# Keeping this for debug purpose
     # print("-------")
 
     url_and_name_dirty = re.findall(r'"><a href="(.*?)</a>', div)[0]
