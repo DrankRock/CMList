@@ -39,6 +39,7 @@ dict_cond = {
     "PO": 0
 }
 
+
 def errorDialog(error_message):
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Critical)
@@ -102,7 +103,16 @@ def language_combo_box():
     return combo
 
 
-def fill_table(filler_list, table):
+def extra_combo_box(game="YuGiOh"):
+    if game == "YuGiOh":
+        combo = QComboBox()
+        combo.addItems(["none", "unlimited", "LIMITED", "1st"])
+        return combo
+
+    return None
+
+
+def fill_table(filler_list, table, game="YuGiOh"):
     debug_print("-- fill table : {}".format(table.objectName()))
     debug_print(filler_list)
     number_of_results = len(filler_list)
@@ -126,12 +136,17 @@ def fill_table(filler_list, table):
                 if elem != 0:
                     combobox.setCurrentText(elem)
                 table.setCellWidget(row, col, combobox)
+            elif col == 7:
+                combobox = extra_combo_box()
+                if elem != 0:
+                    combobox.setCurrentText(elem)
+                table.setCellWidget(row, col, combobox)
             else:
                 table.setItem(row, col, QTableWidgetItem(elem))
 
 
 def url_add_condition_language(url, condition, language):
-    if '?' in url :
+    if '?' in url:
         url = url.split('?')[0]
     separator = '?'
     new_url = url
@@ -143,21 +158,25 @@ def url_add_condition_language(url, condition, language):
     return new_url
 
 
-def list_to_string(chosen_list, urlMode=0):
+def list_to_string(chosen_list, urlMode=0, game="YuGiOh"):
     to_copy = ""
     condition = ""
     language = ""
     for line in chosen_list:
         number_of_lines = 0;
         for col, elem in enumerate(line):
-            if urlMode == 1 :
-                if col == 4 :
+            if urlMode == 1:
+                if col == 4:
                     number_of_lines = int(elem)
-                if col == 7 :
+                if col == 5:
+                    condition = elem
+                if col == 6:
+                    language = elem
+                if col == 8:
                     elem = url_add_condition_language(elem, condition, language)
                     for i in range(number_of_lines):
                         to_copy += "{}\n".format(elem)
-            else :
+            else:
                 if col == 2:
                     to_copy += "\"{}\", ".format(elem)
                 elif col == 5:
@@ -166,7 +185,7 @@ def list_to_string(chosen_list, urlMode=0):
                 elif col == 6:
                     language = elem
                     to_copy += "{}, ".format(elem)
-                elif col == 7:
+                elif col == 8:
                     elem = url_add_condition_language(elem, condition, language)
                     to_copy += "{}\n".format(elem)
                 else:
@@ -188,6 +207,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.quantity = {}
         self.condition = {}
         self.language = {}
+        self.extra = {}
         self.by_name.clicked.connect(self.sort_by_name)
         self.by_rarity.clicked.connect(self.sort_by_rarity)
         self.by_number.clicked.connect(self.sort_by_number)
@@ -204,16 +224,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.threadpool = QtCore.QThreadPool()
 
     def init_table(self, table):
-        table.setColumnCount(8)
+        table.setColumnCount(9)
         header = table.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(4, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(5, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(7, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)  # Expansion
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)  # Number
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)  # Name
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)  # Rarity
+        header.setSectionResizeMode(4, QtWidgets.QHeaderView.ResizeToContents)  # Quantity
+        header.setSectionResizeMode(5, QtWidgets.QHeaderView.ResizeToContents)  # Condition
+        header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)  # Language
+        header.setSectionResizeMode(7, QtWidgets.QHeaderView.ResizeToContents)  # Extra
+        header.setSectionResizeMode(8, QtWidgets.QHeaderView.Stretch)  # Link
 
     def sort_by_name(self):
         self.sort_found_list(self.current_found_list, self.found_items_table, type_of_sort=2)
@@ -262,6 +283,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.quantity[key] = current_table.cellWidget(row, 4).value()
             self.condition[key] = current_table.cellWidget(row, 5).currentText()
             self.language[key] = current_table.cellWidget(row, 6).currentText()
+            self.extra[key] = current_table.cellWidget(row, 7).currentText()
         debug_print(self.condition)
         debug_print(self.quantity)
 
@@ -273,27 +295,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             line[4] = int(self.quantity[key])
             line[5] = self.condition[key]
             line[6] = self.language[key]
+            line[7] = self.extra[key]
         fill_table(current_lis, current_table)
 
     def add_to_list(self):
         self.bottom_list += self.table_to_list(self.found_items_table)
         fill_table(self.bottom_list, self.current_list_table)
 
-    def table_to_list(self, table):
+    def table_to_list(self, table, type="AddToList"):
         output = []
         for i in range(0, table.rowCount()):
             number_of_item = table.cellWidget(i, 4).value()
             if number_of_item > 0:
-                if self.export_combobox.currentText() == "links":
-                    for j in range(number_of_item) :
+                if self.export_combobox.currentText() == "links" and type=="Export":
+                    for j in range(number_of_item):
                         output.append([
                             url_add_condition_language(
-                                table.item(i, 7).text(),
+                                table.item(i, 8).text(),
                                 table.cellWidget(i, 5).currentText(),
                                 table.cellWidget(i, 6).currentText()
                             )
                         ])
-                else :
+                else:
                     output.append([
                         table.item(i, 0).text(),
                         table.item(i, 1).text(),
@@ -302,8 +325,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         number_of_item,
                         table.cellWidget(i, 5).currentText(),
                         table.cellWidget(i, 6).currentText(),
+                        table.cellWidget(i, 7).currentText(),
                         url_add_condition_language(
-                            table.item(i, 7).text(),
+                            table.item(i, 8).text(),
                             table.cellWidget(i, 5).currentText(),
                             table.cellWidget(i, 6).currentText()
                         )
@@ -325,8 +349,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def export(self):
         file_name = self.file_dialog()
         if self.export_combobox.currentText() != "links":
-            fields = ['Expansion', 'Number', 'Name', 'Rarity', 'Quantity', 'Condition', 'Langage', 'Link']
-        else :
+            fields = ['Expansion', 'Number', 'Name', 'Rarity', 'Quantity', 'Condition', 'Langage', 'Extra', 'Link']
+        else:
             fields = ['Link']
         new_list = self.table_to_list(self.current_list_table)
         if file_name:
@@ -362,7 +386,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.export_combobox.currentText() == "everything":
             to_copy = list_to_string(self.bottom_list)
             pyperclip.copy(to_copy)
-        else :
+        else:
             to_copy = list_to_string(self.bottom_list, 1)
             pyperclip.copy(to_copy)
 
