@@ -203,8 +203,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "CMCrawl"))
-        self.version.setText(_translate("MainWindow", "CMCrawl v.0.1 - 15/01/23"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "CMList"))
+        self.version.setText(_translate("MainWindow", "CMList v.0.2 - 17/01/23"))
         self.export_btn.setText(_translate("MainWindow", "export"))
         self.import_btn.setText(_translate("MainWindow", "import"))
         self.copy_btn.setText(_translate("MainWindow", "copy to clipboard"))
