@@ -235,6 +235,12 @@ def list_to_string(chosen_list, urlMode=0, game="YuGiOh"):
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent=parent)
+        self.mtg_link_to_set = None
+        self.current_expansion = None
+        self.current_tcg = None
+        self.mtg_id_to_link = None
+        self.mtg_sets = None
+        self.mtg_data = None
         self.worker = None
         self.setupUi(self)
         self.run_url_btn.clicked.connect(self.runURL)
@@ -268,6 +274,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.duplicate_line.clicked.connect(self.duplicate_selected_line)
 
+        self.game_combobox.addItems(["TCG", "Magic The Gathering", "Yu-Gi-Oh"])
+        self.game_combobox.currentIndexChanged.connect(self.game_choice_combobox)
+        self.expansion_combobox.currentIndexChanged.connect(self.expansion_choice_combobox)
+
+        self.expansion_combobox.addItems(["Choose a TCG first"])
+
+        self.load_mtg_file()
+
 
         # Used by the Worker
         self.threadpool = QtCore.QThreadPool()
@@ -284,6 +298,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)  # Language
         header.setSectionResizeMode(7, QtWidgets.QHeaderView.ResizeToContents)  # Extra
         header.setSectionResizeMode(8, QtWidgets.QHeaderView.Stretch)  # Link
+
+    def load_mtg_file(self):
+        self.mtg_data = {}
+        self.mtg_sets = []
+        self.mtg_id_to_link = {}
+        self.mtg_link_to_set = {}
+        with open(".mtg_expansions", "r") as file:
+            lines = sorted(file.read().splitlines())
+            for line in lines :
+                current = line.split(", ")
+                cm_url = str(current[-1])
+                cm_id = int(current[-2])
+                mtg_set = str(current[-3])
+                mtg_name = str(current[-4])
+                current_name = mtg_set+", "+mtg_name.replace("\"", "")
+                self.mtg_id_to_link[cm_id] = cm_url
+                self.mtg_link_to_set[cm_url] = mtg_set
+                self.mtg_data[current_name] = cm_id
+                self.mtg_sets.append(current_name)
+        self.mtg_sets = sorted(self.mtg_sets)
+
 
     def sort_by_name(self):
         self.sort_found_list(self.current_found_list, self.found_items_table, type_of_sort=2)
@@ -308,6 +343,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             errorDialog("Error : url is incorrect")
             return
         else:
+            base_url_2 = url.split('?')[0]
+            base_url = re.findall(r'https:\/\/www.cardmarket.com(.*)', base_url_2)[0]
+            print("'{}'".format(base_url))
+            if "/Magic/" in url:
+                self.current_tcg = "Magic The Gathering"
+                self.current_expansion = self.mtg_link_to_set.get(base_url)
+                print(self.current_expansion)
+            if "/YuGiOh/" in url:
+                self.current_tcg = "Yu-Gi-Oh"
             self.run_url_btn.setDisabled(True)
             # ## # # # # # #
             self.worker = Worker(url)
@@ -475,6 +519,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.found_items_table.setCellWidget(row, 6, language_combo_box())
         self.found_items_table.setCellWidget(row, 7, extra_combo_box())
         self.found_items_table.setItem(row, 8, QTableWidgetItem(self.found_items_table.item(row + 1, 8).text()))
+
+    def game_choice_combobox(self):
+        self.expansion_combobox.clear()
+        tcg = self.game_combobox.currentText()
+        self.current_tcg = tcg
+        if tcg == "Magic The Gathering":
+            self.expansion_combobox.addItems(self.mtg_sets)
+
+    def expansion_choice_combobox(self):
+        if self.current_tcg == "Magic The Gathering":
+            crt = self.expansion_combobox.currentText()
+            print(crt)
+            set = self.mtg_data[crt]
+            print(set)
+            url = "https://www.cardmarket.com"+self.mtg_id_to_link[set]
+            self.url_input_line_edit.setText(url)
+
 
 
 
