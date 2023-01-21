@@ -266,6 +266,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.set_condition.clicked.connect(self.set_all_conditions)
         self.condition_set_to = ""
 
+        self.duplicate_line.clicked.connect(self.duplicate_selected_line)
+
 
         # Used by the Worker
         self.threadpool = QtCore.QThreadPool()
@@ -458,6 +460,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if result == QDialog.Accepted:
             for i in range(self.found_items_table.rowCount()):
                 self.found_items_table.cellWidget(i, 7).setCurrentText(dialog.result)
+
+    def duplicate_selected_line(self):
+        row = self.found_items_table.currentRow()
+        self.found_items_table.insertRow(row)
+        self.found_items_table.setItem(row, 0, QTableWidgetItem(self.found_items_table.item(row+1, 0).text()))
+        self.found_items_table.setItem(row, 1, QTableWidgetItem(self.found_items_table.item(row + 1, 1).text()))
+        self.found_items_table.setItem(row, 2, QTableWidgetItem(self.found_items_table.item(row + 1, 2).text()))
+        self.found_items_table.setItem(row, 3, QTableWidgetItem(self.found_items_table.item(row + 1, 3).text()))
+        spinbox = QSpinBox()
+        spinbox.setValue(0)
+        self.found_items_table.setCellWidget(row, 4, spinbox)
+        self.found_items_table.setCellWidget(row, 5, condition_combo_box())
+        self.found_items_table.setCellWidget(row, 6, language_combo_box())
+        self.found_items_table.setCellWidget(row, 7, extra_combo_box())
+        self.found_items_table.setItem(row, 8, QTableWidgetItem(self.found_items_table.item(row + 1, 8).text()))
 
 
 
