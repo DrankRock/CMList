@@ -151,9 +151,10 @@ def Pokemon_scraping_cardmarket(completeLinks=False):
                 card_soup = request_block(card_url)
                 expansion_title_soup = card_soup.find_all("img", src="/img/transparent.gif")
                 # print("--", expansion_title_soup)
-                try :
-                    expansion_title = re.findall(r'static\.cardmarket\.com\/img\/[0-9a-z]*\/items/[0-9A-Za-z]*\/(.*?)\/',
-                                                 str(expansion_title_soup))[0]
+                try:
+                    expansion_title = \
+                    re.findall(r'static\.cardmarket\.com\/img\/[0-9a-z]*\/items/[0-9A-Za-z]*\/(.*?)\/',
+                               str(expansion_title_soup))[0]
                     # print("Expansion title : {}".format(expansion_title))
                     print("{}, {}, {}".format(expansion_title, expansion[1], base_link_url[0]))
                 except Exception as exp:
@@ -161,5 +162,12 @@ def Pokemon_scraping_cardmarket(completeLinks=False):
             else:
                 print("Expansion : {} did not contain any link".format(expansion_title))
 
-
-Pokemon_scraping_cardmarket()
+# Pokemon_scraping_cardmarket()
+# with open(".pokemon", "r") as w11:
+#     with open("only_name_pkmn.txt", "r") as w22:
+#         lines1 = w11.read().splitlines()
+#         lines2 = w22.read().splitlines()
+#         print(len(lines1))
+#         print(len(lines2))
+#         for i, elem in enumerate(lines1):
+#             print("{}, {}".format(elem, lines2[i]))
