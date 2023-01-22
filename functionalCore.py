@@ -20,7 +20,7 @@ def request_block(link):
     return soup
 
 
-def divToInfos(div):
+def divToInfos(div, game):
     div = str(div)
     '''
     <div class="row no-gutters" id="productRow268932"><div class="d-none col">18</div><div class="col-icon"><span class="fonticon-camera" data-html="true" data-placement="bottom" 
@@ -43,8 +43,10 @@ def divToInfos(div):
     url = url_and_name_splitted[0]
     url = "https://www.cardmarket.com" + url
     name = url_and_name_splitted[1]
-
-    expansions = re.findall(r'<span>(.*?)</span>', div)[0]
+    if game != "YuGiOh":
+        expansions = 0
+    else:
+        expansions = re.findall(r'<span>(.*?)</span>', div)[0]
 
     num = re.findall(r'has-content-centered">(.*?)</div><div', div)[0]
 
@@ -58,6 +60,13 @@ def urlScrape(url, signals):
     soup = request_block(url)
     all_divs_of_cards = []
     pages = soup.find_all("span", class_="mx-1")
+    game = "YuGiOh"
+    if "/Pokemon/" in url :
+        game = "Pokemon"
+    elif "/YuGiOh/" in url:
+        game = "YuGiOh"
+    elif "/Magic/" in url :
+        game = "Magic"
 
     last_argument = url.split('/')[-1]
     separator = '?'
@@ -85,7 +94,7 @@ def urlScrape(url, signals):
         print(current_url)
         for elem in links:
             if 'class="col-icon small"' in str(elem):
-                result.append(divToInfos(elem))
+                result.append(divToInfos(elem, game))
                 all_divs_of_cards.append(elem)
         progress_value = int(float(i)/float(num_page) * 100)
         signals.progress.emit(progress_value)
