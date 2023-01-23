@@ -159,7 +159,7 @@ class set_dialog(QDialog):
         self.move(left, top)
 
 
-def fill_table(filler_list, table, expansion=None):
+def fill_table(filler_list, table, expansion=None, game="YuGiOh"):
     debug_print("-- fill table : {}".format(table.objectName()))
     debug_print(filler_list)
     number_of_results = len(filler_list)
@@ -186,7 +186,7 @@ def fill_table(filler_list, table, expansion=None):
                     combobox.setCurrentText(elem)
                 table.setCellWidget(row, col, combobox)
             elif col == 7:
-                combobox = extra_combo_box()
+                combobox = extra_combo_box(game)
                 if elem != 0:
                     combobox.setCurrentText(elem)
                 table.setCellWidget(row, col, combobox)
@@ -428,11 +428,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             line[5] = self.condition[key]
             line[6] = self.language[key]
             line[7] = self.extra[key]
-        fill_table(current_lis, current_table)
+        fill_table(current_lis, current_table, game=self.current_tcg)
 
     def add_to_list(self):
         self.bottom_list += self.table_to_list(self.found_items_table)
-        fill_table(self.bottom_list, self.current_list_table)
+        fill_table(self.bottom_list, self.current_list_table, game=self.current_tcg)
 
     def table_to_list(self, table, type="AddToList"):
         output = []
@@ -476,7 +476,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             for i in range(len(self.current_found_list)):
                 self.current_found_list[i][0] = self.current_expansion
 
-        fill_table(self.current_found_list, self.found_items_table, expansion=self.current_expansion)
+        fill_table(self.current_found_list, self.found_items_table, expansion=self.current_expansion, game=self.current_tcg)
         self.run_url_btn.setEnabled(True)
 
     def cancel_action(self):
@@ -579,15 +579,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.expansion_combobox.addItems(self.pkmn_sets)
 
     def expansion_choice_combobox(self):
-        print("exp")
-        print(self.expansion_combobox.currentText(), self.current_tcg)
         if len(self.expansion_combobox.currentText()) < 4:
             return
         if self.current_tcg == "Magic The Gathering":
             crt = self.expansion_combobox.currentText()
-            print(crt)
             set = self.mtg_data[crt]
-            print(set)
             url = "https://www.cardmarket.com"+self.mtg_id_to_link[set]
             self.url_input_line_edit.setText(url)
         elif self.current_tcg == "Pokémon":
