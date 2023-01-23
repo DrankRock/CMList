@@ -40,6 +40,24 @@ dict_cond = {
     "PO": 0
 }
 
+dict_extra_ygo = {
+    "none": 0,
+    "unlimited": 'N',
+    "1st": 'Y'
+}
+
+dict_extra_mtg = {
+    "none": 0,
+    "Foil": 'N',
+    "Not Foil": 'Y'
+}
+
+dict_extra_pkmn = {
+    "none": 0,
+    "Reverse Holo": 'Y',
+    "Not Reverse Holo": 'N'
+}
+
 
 def errorDialog(error_message):
     msg = QMessageBox()
@@ -96,6 +114,15 @@ def condition_to_value(condition):
 def language_to_value(language):
     return dict_language.get(language)
 
+def extra_ygo_to_value(extra):
+    return dict_extra_ygo.get(extra)
+
+def extra_mtg_to_value(extra):
+    return dict_extra_mtg.get(extra)
+
+def extra_pkmn_to_value(extra):
+    return dict_extra_pkmn.get(extra)
+
 
 def language_combo_box():
     combo = QComboBox()
@@ -107,7 +134,7 @@ def language_combo_box():
 def extra_combo_box(game="YuGiOh"):
     if game == "YuGiOh":
         combo = QComboBox()
-        combo.addItems(["none", "unlimited", "LIMITED", "1st"])
+        combo.addItems(["none", "unlimited", "1st"])
         return combo
     elif game == "Magic The Gathering":
         combo = QComboBox()
@@ -115,7 +142,7 @@ def extra_combo_box(game="YuGiOh"):
         return combo
     elif game == "Pokémon":
         combo = QComboBox()
-        combo.addItems(["Choose", "none", "Foil", "Not Foil"])
+        combo.addItems(["Choose", "none", "Reverse Foil", "Not Reverse Foil"])
         return combo
 
     return None
@@ -194,7 +221,7 @@ def fill_table(filler_list, table, expansion=None, game="YuGiOh"):
                 table.setItem(row, col, QTableWidgetItem(elem))
 
 
-def url_add_condition_language(url, condition, language):
+def url_add_condition_language(url, condition, language, extra):
     if '?' in url:
         url = url.split('?')[0]
     separator = '?'
@@ -204,6 +231,14 @@ def url_add_condition_language(url, condition, language):
         separator = '&'
     if language != "none":
         new_url += separator + "language=" + str(language_to_value(language))
+        separator = '&'
+    if extra != "none":
+        if "/Magic/" in url:
+            new_url += separator + "isFoil=" + str(extra_mtg_to_value(language))
+        elif "/Pokemon/" in url:
+            new_url += separator + "isReverseHolo=" + str(extra_pkmn_to_value(language))
+        elif "/YuGiOh/" in url:
+            new_url += separator + "isFoil=" + str(extra_mtg_to_value(language))
     return new_url
 
 
@@ -211,6 +246,7 @@ def list_to_string(chosen_list, urlMode=0, game="YuGiOh"):
     to_copy = ""
     condition = ""
     language = ""
+    extra = ""
     for line in chosen_list:
         number_of_lines = 0;
         for col, elem in enumerate(line):
@@ -221,8 +257,10 @@ def list_to_string(chosen_list, urlMode=0, game="YuGiOh"):
                     condition = elem
                 if col == 6:
                     language = elem
+                if col == 7:
+                    extra = elem
                 if col == 8:
-                    elem = url_add_condition_language(elem, condition, language)
+                    elem = url_add_condition_language(elem, condition, language, extra)
                     for i in range(number_of_lines):
                         to_copy += "{}\n".format(elem)
             else:
@@ -234,8 +272,11 @@ def list_to_string(chosen_list, urlMode=0, game="YuGiOh"):
                 elif col == 6:
                     language = elem
                     to_copy += "{}, ".format(elem)
+                elif col == 7:
+                    extra = elem
+                    to_copy += "{}, ".format(extra)
                 elif col == 8:
-                    elem = url_add_condition_language(elem, condition, language)
+                    elem = url_add_condition_language(elem, condition, language, extra)
                     to_copy += "{}\n".format(elem)
                 else:
                     to_copy += "{}, ".format(elem)
@@ -245,6 +286,11 @@ def list_to_string(chosen_list, urlMode=0, game="YuGiOh"):
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent=parent)
+        self.pkmn_link_to_set = None
+        self.ygo_link_to_set = None
+        self.ygo_id_to_link = None
+        self.ygo_sets = None
+        self.ygo_data = None
         self.pkmn_link_to_id = None
         self.pkmn_id_to_link = None
         self.pkmn_sets = None
@@ -288,7 +334,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.duplicate_line.clicked.connect(self.duplicate_selected_line)
 
-        self.game_combobox.addItems(["TCG", "Magic The Gathering", "Yu-Gi-Oh", "Pokémon"])
+        self.game_combobox.addItems(["TCG", "Magic The Gathering", "YuGiOh", "Pokémon"])
         self.game_combobox.currentIndexChanged.connect(self.game_choice_combobox)
         self.expansion_combobox.currentIndexChanged.connect(self.expansion_choice_combobox)
 
@@ -296,6 +342,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.load_mtg_file()
         self.load_pokemon_file()
+        self.load_yugioh_file()
 
 
         # Used by the Worker
@@ -353,6 +400,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.pkmn_link_to_set[pkmn_url] = pkmn_set
                 self.pkmn_sets.append(data)
 
+    def load_yugioh_file(self):
+        self.ygo_data = {}
+        self.ygo_sets = []
+        self.ygo_id_to_link = {}
+        self.ygo_link_to_set = {}
+        with open(".yugioh_expansions", "r") as file:
+            lines = sorted(file.read().splitlines())
+            for line in lines:
+                current = line.split(", ")
+                ygo_set = current[0]
+                ygo_id = current[1]
+                ygo_url = current[2]
+                ygo_name = ''.join(current[3:])
+                data = ygo_set + ", " + ygo_name.replace("\"", "")
+                self.ygo_data[data] = ygo_id
+                self.ygo_id_to_link[ygo_id] = ygo_url
+                self.ygo_link_to_set[ygo_url] = ygo_set
+                self.ygo_sets.append(data)
+
 
 
 
@@ -381,13 +447,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             base_url_2 = url.split('?')[0]
             base_url = re.findall(r'https:\/\/www.cardmarket.com(.*)', base_url_2)[0]
-            print("'{}'".format(base_url))
             if "/Magic/" in url:
                 self.current_tcg = "Magic The Gathering"
                 self.current_expansion = self.mtg_link_to_set.get(base_url)
-                print(self.current_expansion)
             if "/YuGiOh/" in url:
-                self.current_tcg = "Yu-Gi-Oh"
+                self.current_tcg = "YuGiOh"
+                self.current_expansion = self.ygo_link_to_set.get(base_url)
             if "/Pokemon/" in url:
                 self.current_tcg = "Pokémon"
                 self.current_expansion = self.pkmn_link_to_set.get(base_url)
@@ -461,7 +526,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         url_add_condition_language(
                             table.item(i, 8).text(),
                             table.cellWidget(i, 5).currentText(),
-                            table.cellWidget(i, 6).currentText()
+                            table.cellWidget(i, 6).currentText(),
+                            table.cellWidget(i, 7).currentText()
                         )
                     ])
         return output
@@ -543,7 +609,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def set_all_extra(self):
         if self.current_tcg == "YuGiOh":
-            dialog = set_dialog(["Choose", "none", "unlimited", "LIMITED", "1st"], self)
+            dialog = set_dialog(["Choose", "none", "unlimited", "1st"], self)
         elif self.current_tcg == "Pokémon":
             dialog = set_dialog(["Choose", "none", "Foil", "Not Foil"], self)
         elif self.current_tcg == "Magic The Gathering":
@@ -572,15 +638,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.expansion_combobox.clear()
         tcg = self.game_combobox.currentText()
         self.current_tcg = tcg
-        print(tcg)
         if tcg == "Magic The Gathering":
             self.expansion_combobox.addItems(self.mtg_sets)
         elif tcg == "Pokémon":
             self.expansion_combobox.addItems(self.pkmn_sets)
+        elif tcg == "YuGiOh":
+            self.expansion_combobox.addItems(self.ygo_sets)
 
     def expansion_choice_combobox(self):
         if len(self.expansion_combobox.currentText()) < 4:
-            return
+            return # this is because this function is called even when you have not chosen, and it's a '' arg
         if self.current_tcg == "Magic The Gathering":
             crt = self.expansion_combobox.currentText()
             set = self.mtg_data[crt]
@@ -590,6 +657,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             crt = self.expansion_combobox.currentText()
             set = self.pkmn_data[crt]
             url = "https://www.cardmarket.com" + self.pkmn_id_to_link[set]
+            self.url_input_line_edit.setText(url)
+        elif self.current_tcg == "YuGiOh":
+            crt = self.expansion_combobox.currentText()
+            set = self.ygo_data[crt]
+            url = "https://www.cardmarket.com" + self.ygo_id_to_link[set]
             self.url_input_line_edit.setText(url)
 
     def link_to_base_url(self, url):

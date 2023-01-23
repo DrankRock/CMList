@@ -77,7 +77,7 @@ def urlScrape(url, signals):
     # base_url = re.sub('(&site=[0-9]*)', r'', base_url)
     # print("url : ", url, "\nbase url : ", base_url)
     str_page = str(pages[0].encode_contents())
-    num_page = int(str_page.split(' ')[-1][:-1])
+    num_page = int(str_page.split(' ')[-1][:-1].replace('+', ''))
     if num_page == 15:
         print("[Info] - Max number of pages (15), filler_list might be incomplete.")
     signals.progress.emit(0)
