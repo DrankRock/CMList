@@ -84,30 +84,25 @@ def YGO_scraping_cardmarket(completeLinks=False):
         name = re.findall(r'\">(.*?)<', exp)[0]
         # name = re.sub('[^a-zA-Z0-9]+', '', name)
         all_id_list.append([name, value])
-        print(name, value)
     the_list = []
     # all_id_list now contanins all possible expansions value
     for expansion in all_id_list:
-        # time.sleep(5) # lil sleeping
+        time.sleep(10) # lil sleeping
         # go to the expansion
         url = "https://www.cardmarket.com/en/YuGiOh/Products/Singles?idCategory=1&idExpansion=" + expansion[
             1] + "&idRarity=0&perSite=20"
         soup = request_block(url)
         expansion_title_soup = str(soup.find('title'))
+        link_title = soup.find_all("link", rel="canonical")[0]
+        # print(link_title)
+        base_link_url = re.findall(r'href=\"(.*?)\"', str(link_title))
         try:
             expansion_title = re.findall(r'<title>(.*?) - ', expansion_title_soup)[0]
             # scrape the first card, doesn't matter the card
             found = str(soup.find_all("div", class_="table-body")[0])
-            urls = re.findall(r'<a href="(.*?)"', found)
-            if len(urls) > 0:
-                card_url = "https://www.cardmarket.com" + urls[0]
-                card_soup = request_block(card_url)
-                title_1 = str(card_soup.find('title'))  # get base
-                title_2 = re.findall(r'<title>(.*?) - ', title_1)[0]  # gget only interesting part
-                title_3 = re.findall(r'\((.*?)\)', title_2)  # get all thats between parenthesis
-                title = title_3[-1]  # only keep the last
-                print("\"{}\", \"{}\", {}, {}".format(expansion_title, title, expansion[1], base_link_url))
-                the_list.append([expansion_title, title, expansion[1]])
+            sets = re.findall(r'<span>(.*?)</span>', found)
+            if len(sets) > 0:
+                print(sets[0]+", "+expansion[1]+", "+base_link_url[0]+", "+expansion[0])
             else:
                 print("Expansion : {} did not contain any link".format(expansion_title))
         except Exception as exp:
@@ -161,7 +156,7 @@ def Pokemon_scraping_cardmarket(completeLinks=False):
                     print("Exception with {} : {}".format(expansion, exp))
             else:
                 print("Expansion : {} did not contain any link".format(expansion_title))
-
+YGO_scraping_cardmarket()
 # Pokemon_scraping_cardmarket()
 # with open(".pokemon", "r") as w11:
 #     with open("only_name_pkmn.txt", "r") as w22:
