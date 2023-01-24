@@ -138,11 +138,11 @@ def extra_combo_box(game="YuGiOh"):
         return combo
     elif game == "Magic The Gathering":
         combo = QComboBox()
-        combo.addItems(["Choose", "none", "Foil", "Not Foil"])
+        combo.addItems(["none", "Foil", "Not Foil"])
         return combo
     elif game == "Pokémon":
         combo = QComboBox()
-        combo.addItems(["Choose", "none", "Reverse Foil", "Not Reverse Foil"])
+        combo.addItems(["none", "Reverse Foil", "Not Reverse Foil"])
         return combo
 
     return None
