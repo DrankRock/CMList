@@ -485,8 +485,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         debug_print(self.quantity)
 
         debug_print("Sorting list : {}".format(current_lis))
-        current_lis = sorted(current_lis, key=lambda x: x[type_of_sort],
-                             reverse=(not self.increasing.isChecked()))
+        if type_of_sort == 1:
+            current_lis = sorted(current_lis, key=lambda x: int(x[type_of_sort]),
+                                 reverse=(not self.increasing.isChecked()))
+        else :
+            current_lis = sorted(current_lis, key=lambda x: x[type_of_sort],
+                                 reverse=(not self.increasing.isChecked()))
+
         for line in current_lis:
             key = "" + line[0] + "|" + line[1] + "|" + line[2]
             line[4] = int(self.quantity[key])
