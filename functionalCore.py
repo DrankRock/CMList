@@ -44,11 +44,13 @@ def divToInfos(div, game):
     url = "https://www.cardmarket.com" + url
     name = url_and_name_splitted[1]
     if game != "YuGiOh":
-        expansions = 0
+        expansions = '0'
     else:
         expansions = re.findall(r'<span>(.*?)</span>', div)[0]
 
     num = re.findall(r'has-content-centered">(.*?)</div><div', div)[0]
+    if len(num) == 0:
+        num = '0'
 
     rarity = re.findall(r'data-original-title="(.*?)" data-placement', div)[0]
     return [expansions, num, name, rarity, 0, 0, 0, 0,  url]
