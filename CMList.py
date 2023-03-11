@@ -596,7 +596,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             to_copy = list_to_string(self.bottom_list)
             pyperclip.copy(to_copy)
         else:
-            to_copy = list_to_string(self.bottom_list, 1)
+            to_copy = list_to_string(self.bottom_list, urlMode=1)
             pyperclip.copy(to_copy)
 
     def set_all_languages(self):
