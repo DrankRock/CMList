@@ -49,9 +49,9 @@ def divToInfos(div, game):
         expansions = re.findall(r'<span>(.*?)</span>', div)[0]
 
     num = re.findall(r'has-content-centered">(.*?)</div><div', div)[0]
+    num = ''.join(c for c in num if c.isnumeric())
     if len(num) == 0:
         num = '0'
-
     rarity = re.findall(r'data-original-title="(.*?)" data-placement', div)[0]
     return [expansions, num, name, rarity, 0, 0, 0, 0,  url]
     # print(expansions, url, name, num, rarity)

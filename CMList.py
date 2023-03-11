@@ -548,8 +548,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.current_tcg != "YuGiOh":
             for i in range(len(self.current_found_list)):
                 self.current_found_list[i][0] = self.current_expansion
-
         fill_table(self.current_found_list, self.found_items_table, expansion=self.current_expansion, game=self.current_tcg)
+        self.sort_found_list(self.current_found_list, self.found_items_table, type_of_sort=1)
         self.run_url_btn.setEnabled(True)
 
     def cancel_action(self):
