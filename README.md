@@ -1,8 +1,6 @@
 # CMList
 ## A Cardmarket list creator
 
-**THIS CURRENTLY WORKS ONLY WITH YUGIOH**
-
 ### Installation
 ```bash
 $ git clone https://github.com/DrankRock/CMList.git
